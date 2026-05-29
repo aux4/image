@@ -1,7 +1,7 @@
 {
   "scope": "aux4",
   "name": "image",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Image manipulation toolkit powered by ImageMagick",
   "license": "Apache-2.0",
   "tags": [
