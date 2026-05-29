@@ -1,0 +1,437 @@
+{
+  "scope": "aux4",
+  "name": "image",
+  "version": "1.0.0",
+  "description": "Image manipulation toolkit powered by ImageMagick",
+  "license": "Apache-2.0",
+  "tags": [
+    "image",
+    "imagemagick",
+    "resize",
+    "convert",
+    "compress",
+    "watermark",
+    "thumbnail",
+    "compare"
+  ],
+  "system": [
+    [
+      "test:magick --version",
+      "brew:imagemagick",
+      "apt:imagemagick",
+      "dnf:ImageMagick",
+      "apk:imagemagick"
+    ]
+  ],
+  "profiles": [
+    {
+      "name": "main",
+      "commands": [
+        {
+          "name": "image",
+          "execute": [
+            "profile:image"
+          ],
+          "help": {
+            "text": "Image manipulation toolkit powered by ImageMagick"
+          }
+        }
+      ]
+    },
+    {
+      "name": "image",
+      "commands": [
+        {
+          "name": "resize",
+          "execute": [
+            "nout:magick ${input} -resize ${size} ${output}",
+            "log:Resized ${input} to ${size} -> ${output}"
+          ],
+          "help": {
+            "text": "Resize an image by dimensions or percentage",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "size",
+                "text": "Target size (e.g., 800x600, 50%)"
+              },
+              {
+                "name": "output",
+                "text": "Output file path"
+              }
+            ]
+          }
+        },
+        {
+          "name": "convert",
+          "execute": [
+            "set:basename=!echo value(input) | sed 's/\\.[^.]*$//'",
+            "set:output=!test -n value(output) && echo value(output) || echo ${basename}.${format}",
+            "nout:magick value(input) value(output)",
+            "log:Converted ${input} -> ${output}"
+          ],
+          "help": {
+            "text": "Convert an image to a different format",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "format",
+                "text": "Target format (jpg, png, webp, tiff, gif, bmp)",
+                "options": [
+                  "jpg",
+                  "png",
+                  "webp",
+                  "tiff",
+                  "gif",
+                  "bmp"
+                ]
+              },
+              {
+                "name": "output",
+                "text": "Output file path (default: input name with new extension)",
+                "default": ""
+              }
+            ]
+          }
+        },
+        {
+          "name": "compress",
+          "execute": [
+            "nout:magick ${input} -strip -quality ${quality} ${output}",
+            "log:Compressed ${input} (quality: ${quality}) -> ${output}"
+          ],
+          "help": {
+            "text": "Compress an image by adjusting quality",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "quality",
+                "text": "Quality level (1-100)",
+                "default": "80"
+              },
+              {
+                "name": "output",
+                "text": "Output file path"
+              }
+            ]
+          }
+        },
+        {
+          "name": "info",
+          "execute": [
+            "if(verbose==true) && magick identify -verbose ${input} || magick identify ${input}"
+          ],
+          "help": {
+            "text": "Display image metadata and properties",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "verbose",
+                "text": "Show detailed metadata",
+                "default": "false"
+              }
+            ]
+          }
+        },
+        {
+          "name": "watermark",
+          "execute": [
+            "nout:if [ -n value(font) ]; then magick value(input) -gravity value(gravity) -fill value(color) -font value(font) -pointsize value(fontSize) -annotate +10+10 value(text) value(output); else magick value(input) -gravity value(gravity) -fill value(color) -pointsize value(fontSize) -annotate +10+10 value(text) value(output); fi",
+            "log:Watermarked ${input} -> ${output}"
+          ],
+          "help": {
+            "text": "Apply a text watermark to an image",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "text",
+                "text": "Watermark text"
+              },
+              {
+                "name": "gravity",
+                "text": "Watermark position",
+                "default": "SouthEast",
+                "options": [
+                  "NorthWest",
+                  "North",
+                  "NorthEast",
+                  "West",
+                  "Center",
+                  "East",
+                  "SouthWest",
+                  "South",
+                  "SouthEast"
+                ]
+              },
+              {
+                "name": "color",
+                "text": "Text color",
+                "default": "white"
+              },
+              {
+                "name": "fontSize",
+                "text": "Font size in points",
+                "default": "36"
+              },
+              {
+                "name": "font",
+                "text": "Font name or path to font file",
+                "default": ""
+              },
+              {
+                "name": "output",
+                "text": "Output file path"
+              }
+            ]
+          }
+        },
+        {
+          "name": "strip",
+          "execute": [
+            "nout:test -n value(output) && magick value(input) -strip value(output) || magick mogrify -strip value(input)",
+            "set:message=!test -n value(output) && echo Stripped metadata from value(input) '->' value(output) || echo Stripped metadata from value(input)",
+            "log:${message}"
+          ],
+          "help": {
+            "text": "Remove EXIF and metadata from an image",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "output",
+                "text": "Output file path (default: overwrite input)",
+                "default": ""
+              }
+            ]
+          }
+        },
+        {
+          "name": "thumbnail",
+          "execute": [
+            "nout:magick ${input} -thumbnail ${size}^ -gravity center -extent ${size} ${output}",
+            "log:Thumbnail ${input} (${size}) -> ${output}"
+          ],
+          "help": {
+            "text": "Generate a thumbnail with smart cropping",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "size",
+                "text": "Thumbnail size (e.g., 150x150)",
+                "default": "150x150"
+              },
+              {
+                "name": "output",
+                "text": "Output file path"
+              }
+            ]
+          }
+        },
+        {
+          "name": "crop",
+          "execute": [
+            "nout:magick ${input} -crop ${geometry} +repage ${output}",
+            "log:Cropped ${input} (${geometry}) -> ${output}"
+          ],
+          "help": {
+            "text": "Crop a region from an image",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "geometry",
+                "text": "Crop region (WxH+X+Y, e.g., 300x200+50+100)"
+              },
+              {
+                "name": "output",
+                "text": "Output file path"
+              }
+            ]
+          }
+        },
+        {
+          "name": "grid",
+          "execute": [
+            "nout:bash -c 'set -e; IN=\"$1\"; OUT=\"$2\"; STP=\"$3\"; LBL=\"$4\"; CLR=\"$5\"; FSZ=\"$6\"; FNT=\"$7\"; if [ -z \"$FNT\" ]; then for f in /System/Library/Fonts/Supplemental/Arial.ttf /System/Library/Fonts/Monaco.ttf /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf /usr/share/fonts/TTF/DejaVuSans.ttf; do if [ -f \"$f\" ]; then FNT=\"$f\"; break; fi; done; fi; W=$(magick identify -format \"%w\" \"$IN\"); H=$(magick identify -format \"%h\" \"$IN\"); LNS=\"\"; for X in $(seq 0 $STP $W); do LNS=\"$LNS line $X,0 $X,$H\"; done; for Y in $(seq 0 $STP $H); do LNS=\"$LNS line 0,$Y $W,$Y\"; done; TXT=\"\"; for X in $(seq 0 $LBL $W); do TXT=\"$TXT text $((X+3)),$((FSZ+2)) \\\"$X\\\"\"; done; for Y in $(seq 0 $LBL $H); do TXT=\"$TXT text 3,$((Y+FSZ+2)) \\\"$Y\\\"\"; done; FA=\"\"; if [ -n \"$FNT\" ]; then FA=\"-font $FNT\"; fi; magick \"$IN\" -stroke \"$CLR\" -fill none -strokewidth 1 -draw \"$LNS\" -stroke none -fill \"$CLR\" $FA -pointsize $FSZ -draw \"$TXT\" \"$OUT\"' _ value(input) value(output) value(step) value(labelStep) value(color) value(fontSize) value(font)",
+            "log:Grid overlay on ${input} (step: ${step}px, labels: ${labelStep}px) -> ${output}"
+          ],
+          "help": {
+            "text": "Overlay a labeled coordinate grid on an image (useful for vision-LLM bounding-box prompts)",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "output",
+                "text": "Output file path"
+              },
+              {
+                "name": "step",
+                "text": "Grid line spacing in pixels",
+                "default": "50"
+              },
+              {
+                "name": "labelStep",
+                "text": "Numeric label spacing in pixels",
+                "default": "100"
+              },
+              {
+                "name": "color",
+                "text": "Grid and label color",
+                "default": "red"
+              },
+              {
+                "name": "fontSize",
+                "text": "Label font size in points",
+                "default": "12"
+              },
+              {
+                "name": "font",
+                "text": "Path to a TTF/OTF font file (auto-detected if empty)",
+                "default": ""
+              }
+            ]
+          }
+        },
+        {
+          "name": "mask",
+          "execute": [
+            "nout:bash -c 'set -e; IN=\"$1\"; OUT=\"$2\"; GEO=\"$3\"; CLR=\"$4\"; W=$(echo \"$GEO\" | cut -dx -f1); HXY=$(echo \"$GEO\" | cut -dx -f2); H=$(echo \"$HXY\" | cut -d+ -f1); X=$(echo \"$HXY\" | cut -d+ -f2); Y=$(echo \"$HXY\" | cut -d+ -f3); X2=$((X+W)); Y2=$((Y+H)); magick \"$IN\" -fill \"$CLR\" -stroke none -draw \"rectangle $X,$Y $X2,$Y2\" \"$OUT\"' _ value(input) value(output) value(geometry) value(color)",
+            "log:Masked ${input} (${geometry}, ${color}) -> ${output}"
+          ],
+          "help": {
+            "text": "Paint a solid-color rectangle over a region of an image (useful for redacting step numerals, labels, watermarks)",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "output",
+                "text": "Output file path"
+              },
+              {
+                "name": "geometry",
+                "text": "Rectangle region (WxH+X+Y, e.g., 80x80+50+60)"
+              },
+              {
+                "name": "color",
+                "text": "Fill color (any ImageMagick color)",
+                "default": "white"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rect",
+          "execute": [
+            "nout:magick value(input) value(output)",
+            "json:echo value(rect*)",
+            "each:bash -c 'set -e; R=\"$1\"; OUT=\"$2\"; CLR=\"$3\"; SW=\"$4\"; W=$(echo \"$R\" | cut -dx -f1); HXY=$(echo \"$R\" | cut -dx -f2); H=$(echo \"$HXY\" | cut -d+ -f1); X=$(echo \"$HXY\" | cut -d+ -f2); Y=$(echo \"$HXY\" | cut -d+ -f3); X2=$((X+W)); Y2=$((Y+H)); magick \"$OUT\" -stroke \"$CLR\" -fill none -strokewidth \"$SW\" -draw \"rectangle $X,$Y $X2,$Y2\" \"$OUT\"' _ ${item} ${output} ${color} ${strokeWidth}",
+            "log:Drew rectangles on ${input} -> ${output}"
+          ],
+          "help": {
+            "text": "Draw outlined rectangles on an image for visual debugging",
+            "variables": [
+              {
+                "name": "input",
+                "text": "Input image file",
+                "arg": true
+              },
+              {
+                "name": "rect",
+                "text": "Rectangle region (WxH+X+Y), repeatable",
+                "multiple": true
+              },
+              {
+                "name": "output",
+                "text": "Output file path"
+              },
+              {
+                "name": "color",
+                "text": "Stroke color",
+                "default": "red"
+              },
+              {
+                "name": "strokeWidth",
+                "text": "Line thickness in pixels",
+                "default": "3"
+              }
+            ]
+          }
+        },
+        {
+          "name": "compare",
+          "execute": [
+            "nout:magick compare -metric ${metric} ${input} ${input2} ${output} 2>&1 || true",
+            "log:Compared ${input} and ${input2} (${metric}) -> ${output}"
+          ],
+          "help": {
+            "text": "Compare two images and highlight differences",
+            "variables": [
+              {
+                "name": "input",
+                "text": "First image file",
+                "arg": true
+              },
+              {
+                "name": "input2",
+                "text": "Second image file"
+              },
+              {
+                "name": "output",
+                "text": "Diff output file path",
+                "default": "diff.png"
+              },
+              {
+                "name": "metric",
+                "text": "Comparison metric",
+                "default": "AE",
+                "options": [
+                  "AE",
+                  "RMSE",
+                  "PSNR",
+                  "SSIM",
+                  "MAE"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
