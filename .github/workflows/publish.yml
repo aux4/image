@@ -37,11 +37,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Install dependencies
-        run: sudo apt-get install -y imagemagick
-
       - name: Test
         uses: aux4/test-package-action@v1
+        with:
+          system_packages: imagemagick
 
   publish:
     needs: [test]
