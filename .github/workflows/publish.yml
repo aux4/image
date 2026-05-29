@@ -37,10 +37,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Install ImageMagick 7
+        run: |
+          sudo apt-get install -y libpng-dev libjpeg-dev libtiff-dev libwebp-dev
+          curl -fsSL https://imagemagick.org/archive/ImageMagick.tar.gz | tar xz
+          cd ImageMagick-*
+          ./configure --prefix=/usr/local
+          make -j$(nproc)
+          sudo make install
+          sudo ldconfig
+
       - name: Test
         uses: aux4/test-package-action@v1
-        with:
-          system_packages: imagemagick
 
   publish:
     needs: [test]
