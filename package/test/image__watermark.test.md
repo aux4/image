@@ -19,7 +19,7 @@ rm -f watermarked-*.png
 ### should apply watermark with defaults
 
 ```execute
-aux4 image watermark test-input.ppm --text "Test"--output watermarked-default.png
+aux4 image watermark test-input.ppm --text "Test" --output watermarked-default.png
 ```
 
 ```expect
@@ -31,7 +31,7 @@ Watermarked test-input.ppm -> watermarked-default.png
 ### should apply watermark with custom gravity and color
 
 ```execute
-aux4 image watermark test-input.ppm --text "DRAFT" --gravity Center --color red --fontSize 48--output watermarked-custom.png
+aux4 image watermark test-input.ppm --text "DRAFT" --gravity Center --color red --fontSize 48 --output watermarked-custom.png
 ```
 
 ```expect
