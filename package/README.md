@@ -61,7 +61,7 @@ aux4 image convert photo.jpg --format webp
 ```
 
 ```text
-Converted photo.jpg to webp -> photo.webp
+Converted photo.jpg -> photo.webp
 ```
 
 ### compress

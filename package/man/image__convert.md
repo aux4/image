@@ -20,7 +20,7 @@ aux4 image convert photo.jpg --format webp
 ```
 
 ```text
-Converted photo.jpg to webp -> photo.webp
+Converted photo.jpg -> photo.webp
 ```
 
 ```bash
@@ -28,5 +28,5 @@ aux4 image convert photo.jpg --format png --output assets/photo.png
 ```
 
 ```text
-Converted photo.jpg to png -> assets/photo.png
+Converted photo.jpg -> assets/photo.png
 ```
