@@ -33,10 +33,10 @@ aux4 image info photo.jpg
 Resize an image by pixel dimensions or percentage.
 
 ```bash
-aux4 image resize <input> --size <size> --output <file>
+aux4 image resize <input> --size <size> [--autoOrient true|false] [--strip true|false] --output <file>
 ```
 
-Supports absolute dimensions (`800x600`), single-axis constraints (`800x`, `x600`), percentage (`50%`), and forced exact dimensions (`800x600!`).
+Supports absolute dimensions (`800x600`), single-axis constraints (`800x`, `x600`), percentage (`50%`), forced exact dimensions (`800x600!`), and never-upscale (`1568x1568>` — only shrinks an image larger than the target, leaving a smaller one untouched). `--output`'s own file extension drives format conversion, so resizing a `.heic`/`.webp`/... input into a `.jpg`/`.png` output also converts it in the same pass. `--autoOrient true` (default `false`) rotates/flips the image upright per its EXIF orientation tag before resizing — needed because cameras/phones commonly store real orientation as metadata rather than rotating the pixels. `--strip true` (default `false`) removes EXIF/ICC/other metadata from the output, in the same pass.
 
 ```bash
 aux4 image resize photo.jpg --size 800x600 --output photo-resized.jpg
@@ -44,6 +44,16 @@ aux4 image resize photo.jpg --size 800x600 --output photo-resized.jpg
 
 ```text
 Resized photo.jpg to 800x600 -> photo-resized.jpg
+```
+
+Prepare a phone photo for a vision API in one pass:
+
+```bash
+aux4 image resize IMG_1234.heic --size "1568x1568>" --autoOrient true --strip true --output prepared.jpg
+```
+
+```text
+Resized IMG_1234.heic to 1568x1568> -> prepared.jpg
 ```
 
 ### convert
