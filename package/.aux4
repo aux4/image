@@ -1,7 +1,7 @@
 {
   "scope": "aux4",
   "name": "image",
-  "version": "1.0.3",
+  "version": "1.2.2",
   "description": "Image manipulation toolkit powered by ImageMagick",
   "license": "Apache-2.0",
   "tags": [
@@ -44,7 +44,7 @@
         {
           "name": "resize",
           "execute": [
-            "nout:magick ${input} -resize ${size} ${output}",
+            "nout:bash -c 'set -e; ORIENT=\"\"; if [ \"$1\" = \"true\" ]; then ORIENT=\"-auto-orient\"; fi; STRIP=\"\"; if [ \"$2\" = \"true\" ]; then STRIP=\"-strip\"; fi; magick \"$3\" $ORIENT -resize \"$4\" $STRIP \"$5\"' _ value(autoOrient) value(strip) value(input) value(size) value(output)",
             "log:Resized ${input} to ${size} -> ${output}"
           ],
           "help": {
@@ -57,11 +57,29 @@
               },
               {
                 "name": "size",
-                "text": "Target size (e.g., 800x600, 50%)"
+                "text": "Target size (e.g., 800x600, 50%). Append '>' to only shrink an image larger than this size, never enlarging a smaller one (e.g., 1568x1568>)."
               },
               {
                 "name": "output",
-                "text": "Output file path"
+                "text": "Output file path. The output file's own extension drives the format, so resizing a .heic/.webp/... input into a .jpg/.png output also converts it, in the same pass."
+              },
+              {
+                "name": "autoOrient",
+                "text": "Rotate/flip the image upright according to its EXIF orientation tag before resizing (cameras and phones commonly store a photo's real orientation as metadata instead of rotating the pixels themselves).",
+                "default": "false",
+                "options": [
+                  "false",
+                  "true"
+                ]
+              },
+              {
+                "name": "strip",
+                "text": "Remove EXIF/ICC/other metadata from the output in the same pass (equivalent to a following `image strip`, without the extra ImageMagick invocation).",
+                "default": "false",
+                "options": [
+                  "false",
+                  "true"
+                ]
               }
             ]
           }
